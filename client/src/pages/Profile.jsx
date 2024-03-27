@@ -8,13 +8,20 @@ import {
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
-import { updateUserStart, updateUserFailure, updateUserSuccess } from "../redux/user/userSlice";
+import {
+  updateUserStart,
+  updateUserFailure,
+  updateUserSuccess,
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess
+} from "../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import { set } from "mongoose";
 
 export default function Profile() {
   const fileRef = useRef(null);
-  const { currentUser, loading, error} = useSelector((state) => state.user);
+  const { currentUser, loading, error } = useSelector((state) => state.user);
   const [file, setFile] = useState(undefined);
   const [filepercent, setFilePercent] = useState(0);
   const [fileError, setFileError] = useState(false);
@@ -60,10 +67,10 @@ export default function Profile() {
     // console.log(formData);
     try {
       dispatch(updateUserStart());
-      const res = await fetch(`/api/user/update/${currentUser._id}`,{
-        method: 'POST',
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
@@ -77,7 +84,24 @@ export default function Profile() {
     } catch (error) {
       dispatch(updateUserFailure(error.message));
     }
-  }
+  };
+  const handleDeleteUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+        
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  };
 
   return (
     <div className='p-3 max-w-lg mx-auto'>
@@ -96,15 +120,17 @@ export default function Profile() {
           alt='profile'
           className='rounded-full h-24 w-24 object-cover cursor-pointer self-center mt-2'
         />
-        <p className="text-sm self-center">
-          {fileError ? 
-          (<span className='text-red-700'>Error Image Upload(image must be less than 2 mb)</span>) :
-          filepercent > 0 && filepercent < 100 ?
-          (<span className='text-slate-700-700'>{`Uploading ${filepercent}%`}</span>) :
-          filepercent === 100 ?
-          (<span className='text-green-700'>Image successfully Uploaded!</span>)
-          : (
-            ''
+        <p className='text-sm self-center'>
+          {fileError ? (
+            <span className='text-red-700'>
+              Error Image Upload(image must be less than 2 mb)
+            </span>
+          ) : filepercent > 0 && filepercent < 100 ? (
+            <span className='text-slate-700-700'>{`Uploading ${filepercent}%`}</span>
+          ) : filepercent === 100 ? (
+            <span className='text-green-700'>Image successfully Uploaded!</span>
+          ) : (
+            ""
           )}
         </p>
         <input
@@ -130,16 +156,26 @@ export default function Profile() {
           className='border p-3 rounded-lg'
           onChange={handleChange}
         />
-        <button disabled={loading} className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'>
-          {loading ? 'Loading...' : 'Update'}
+        <button
+          disabled={loading}
+          className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'
+        >
+          {loading ? "Loading..." : "Update"}
         </button>
       </form>
       <div className='flex justify-between mt-5'>
-        <span className='text-red-700 cursor-pointer'>Delete Account</span>
+        <span
+          onClick={handleDeleteUser}
+          className='text-red-700 cursor-pointer'
+        >
+          Delete Account
+        </span>
         <span className='text-red-700 cursor-pointer'>Sign Out</span>
       </div>
-      <p className="text-red-700 mt-5">{error ? error: ''}</p>
-      <p className="text-green-700 mt-5">{updateSuccess ? "User is updated successfully!": ''}</p>
+      <p className='text-red-700 mt-5'>{error ? error : ""}</p>
+      <p className='text-green-700 mt-5'>
+        {updateSuccess ? "User is updated successfully!" : ""}
+      </p>
     </div>
   );
 }
