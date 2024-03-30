@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ListingItem from "../components/ListingItem";
@@ -15,12 +14,11 @@ export default function Search() {
   });
   const [loading, setLoading] = useState(false);
   const [listings, setListings] = useState([]);
-  console.log(listings);
+  const [showMore, setShowMore] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-
     const urlParams = new URLSearchParams(window.location.search);
     const searchTerm = urlParams.get("searchTerm");
     const type = urlParams.get("type");
@@ -40,27 +38,23 @@ export default function Search() {
     });
 
     const fetchData = async () => {
-        
-        try {
-            setLoading(true);
-            const url = urlParams.toString();
-            const res = await fetch(
-              `/api/listing/get?${url}`
-            );
-            const data = await res.json();
-            setListings(data);
-            setLoading(false);
-        } catch (error) {
-            setLoading(false);
-            console.log(error);
+      try {
+        setLoading(true);
+        const url = urlParams.toString();
+        const res = await fetch(`/api/listing/get?${url}`);
+        const data = await res.json();
+        if (data.length >= 9) {
+          setShowMore(true);
         }
-      
-    }
+        setListings(data);
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        console.log(error);
+      }
+    };
     fetchData();
-
-
   }, [window.location.search]);
-
 
   const handleChange = (e) => {
     if (e.target.id === "searchTerm") {
@@ -107,6 +101,24 @@ export default function Search() {
     }
     const searchQuery = urlParams.toString();
     navigate(`/search?${searchQuery}`);
+  };
+
+  const onShowMoreClick = async () => {
+    try {
+      const numberOfListings = listings.length;
+      const startIndex = numberOfListings;
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set("startIndex", startIndex);
+      const url = urlParams.toString();
+      const res = await fetch(`/api/listing/get?${url}`);
+      const data = await res.json();
+      if (data.length < 9) {
+        setShowMore(false);
+      }
+      setListings([...listings, ...data]);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -215,7 +227,7 @@ export default function Search() {
         <h1 className='text-3xl font-semibold border-b p-3 text-slate-700 mt-5'>
           Listing Results:
         </h1>
-        <div className='flex flex-wrap gap-4 p-7 '>
+        <div className='flex flex-wrap gap-4 p-7'>
           {!loading && listings.length === 0 && (
             <p className='text-xl text-slate-700 p-3 text-center w-full'>
               No listing found!
@@ -231,6 +243,15 @@ export default function Search() {
             listings.map((listing) => (
               <ListingItem key={listing._id} listing={listing} />
             ))}
+          {showMore && (
+            <button
+              type='button'
+              onClick={onShowMoreClick}
+              className='text-slate-700 hover: underline p-7 text-center w-full'
+            >
+              Show More
+            </button>
+          )}
         </div>
       </div>
     </div>
