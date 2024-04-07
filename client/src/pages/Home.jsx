@@ -56,8 +56,7 @@ export default function Home() {
           place with ease
         </h1>
         <div className='text-gray-400 text-xs sm:text-sm'>
-          Honghao Estate is the best place to find your next perfect place to
-          live.
+          Ryan Estate is the best place to find your next perfect place to live.
           <br />
           We have a wide range of properties for you to choose from.
         </div>
@@ -101,7 +100,7 @@ export default function Home() {
                 Show more offers
               </Link>
             </div>
-            <div className='flex flex-wrap justify-center gap-4 '>
+            <div className='flex flex-col sm:flex-row justify-center gap-4'>
               {offerListings.map((listing) => (
                 <ListingItem key={listing._id} listing={listing} />
               ))}
@@ -121,7 +120,7 @@ export default function Home() {
                 Show more places for rent
               </Link>
             </div>
-            <div className='flex flex-wrap justify-center gap-4'>
+            <div className='flex flex-col sm:flex-row justify-center gap-4 '>
               {rentListings.map((listing) => (
                 <ListingItem key={listing._id} listing={listing} />
               ))}
@@ -141,7 +140,7 @@ export default function Home() {
                 Show more places for sale
               </Link>
             </div>
-            <div className='flex flex-wrap justify-center gap-4'>
+            <div className='flex flex-col sm:flex-row justify-center gap-4 '>
               {saleListings.map((listing) => (
                 <ListingItem key={listing._id} listing={listing} />
               ))}
